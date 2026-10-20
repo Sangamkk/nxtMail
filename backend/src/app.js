@@ -11,11 +11,20 @@ app.use(session({
   saveUninitialized: false,
   cookie: { httpOnly: true, secure: false, sameSite: "lax", maxAge: 86400000 }
 }));
-app.use(cors());
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true
+}));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+app.use("/api/snooze", require("./routes/snoozeRoutes"));
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/gmail", require("./routes/gmailRoutes"));
 
-app.get("/", (req, res) => res.json({ message: "nxtMail API running" }));
+
+app.get("/api/test", (req, res) => {
+  res.json({ message: "Backend is working" });
+});
 
 module.exports = app;
