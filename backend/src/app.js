@@ -21,6 +21,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api/snooze", require("./routes/snoozeRoutes"));
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/gmail", require("./routes/gmailRoutes"));
+app.use("/api/ai", require("./routes/aiRoutes"));
 
 
 app.get("/api/test", (req, res) => {

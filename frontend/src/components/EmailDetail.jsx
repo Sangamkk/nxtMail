@@ -1,27 +1,22 @@
 import { useState, useRef, useEffect } from "react";
 import {
   ArrowLeft, Archive, Trash2, RotateCcw, Star, Reply,
-  Sparkles, Clock, Calendar, ChevronDown, X,
+  Sparkles, Clock, Calendar, ChevronDown, X, LoaderCircle
 } from "lucide-react";
 
-export default function EmailDetail({
-  email,
-  onBack,
-  onStar,
-  onArchive,
-  onDelete,
-  onSnooze,
-  onRestore,
-  onPermanentDelete,
-  onReply,
-  onSummarize,
-  isTrash = false,
-}) {
+export default function EmailDetail({ email, onBack, onStar, onArchive, onDelete, onSnooze, onRestore, onPermanentDelete, onReply, onSummarize, isTrash = false, }) {
   const [showSnooze, setShowSnooze] = useState(false);
   const [snoozeDate, setSnoozeDate] = useState("");
   const [snoozeTime, setSnoozeTime] = useState("09:00");
   const [error, setError] = useState("");
   const snoozeRef = useRef(null);
+
+  const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
+  // Inside EmailDetail component:
+  const [summary, setSummary] = useState("");
+  const [draft, setDraft] = useState("");
+  const [aiLoading, setAiLoading] = useState("");
 
   useEffect(() => {
     function handleOutsideClick(e) {
@@ -33,6 +28,28 @@ export default function EmailDetail({
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, []);
 
+  async function handleArchive() {
+    try {
+      const response = await fetch(
+        `${API}/api/gmail/archive/${email.id}`,
+        {
+          method: "PATCH",
+          credentials: "include",
+        }
+      );
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to archive email");
+      }
+
+      onArchive?.(email.id);
+    } catch (error) {
+      console.error("Archive failed:", error);
+    }
+  }
+
   if (!email) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center text-[#849084]">
@@ -42,8 +59,7 @@ export default function EmailDetail({
     );
   }
 
-  const button =
-    "flex items-center gap-2 rounded-lg border border-[#E8E8DF] px-3 py-2 text-sm transition hover:bg-[#E3EDDB]";
+  const button = "flex items-center gap-2 rounded-lg border border-[#E8E8DF] px-3 py-2 text-sm transition hover:bg-[#E3EDDB]";
 
   function confirmSnooze() {
     if (!snoozeDate || !snoozeTime) {
@@ -78,9 +94,8 @@ export default function EmailDetail({
 
         {!isTrash && (
           <>
-            <button onClick={onArchive} className={button} title="Archive">
-              <Archive size={17} />
-              <span className="hidden sm:inline">Archive</span>
+            <button className={button} onClick={handleArchive} title="Archive">
+              <Archive size={18} /> Archive
             </button>
 
             <button onClick={onStar} className={button} title="Star">

@@ -16,10 +16,10 @@ export default function AIAssistant({ email, onClose }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  async function runAction(action) {
+async function runAction(action) {
     if (!email) {
-      setError("Select an email first.");
-      return;
+        setError("Select an email first.");
+        return;
     }
 
     setLoading(true);
@@ -27,55 +27,43 @@ export default function AIAssistant({ email, onClose }) {
     setResult("");
 
     try {
-      /*
-       * Replace this path with your actual AI backend endpoint.
-       * No AI result is fabricated by this component.
-       */
-      const response = await fetch(`${API}/api/ai/${action}`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          emailId: email.id || email.messageId,
-          subject: email.subject || "",
-          body: email.body || email.text || email.snippet || "",
-        }),
-      });
+        const response = await fetch(`${API}/api/ai/${action}`, {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                email: {
+                    id: email.id || email.messageId,
+                    subject: email.subject || "",
+                    from: email.from || email.sender || "",
+                    body: email.body || email.text || email.snippet || "",
+                },
+            }),
+        });
 
-      const data = await response.json().catch(() => ({}));
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.message || `Request failed (${response.status})`);
 
-      if (!response.ok) {
-        throw new Error(data.message || `Request failed (${response.status})`);
-      }
+        const text = data.summary || data.draft || data.reply || data.result || data.text;
+        if (!text) throw new Error("The AI endpoint returned no result.");
 
-      const text =
-        data.summary ||
-        data.reply ||
-        data.result ||
-        data.text;
-
-      if (!text) {
-        throw new Error("The AI endpoint returned no result.");
-      }
-
-      setResult(text);
+        setResult(text);
     } catch (err) {
-      setError(err.message || "Unable to complete the AI request.");
+        setError(err.message || "Unable to complete the AI request.");
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  }
+}
 
-  async function copyResult() {
+async function copyResult() {
     if (!result) return;
 
     try {
-      await navigator.clipboard.writeText(result);
+        await navigator.clipboard.writeText(result);
     } catch {
-      setError("Unable to copy. Please select the text manually.");
+        setError("Unable to copy. Please select the text manually.");
     }
-  }
-
+}
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-black/20">
       <section className="flex h-full w-full max-w-md flex-col border-l border-[#E5E9DF] bg-[#FAF9F5] shadow-2xl">
@@ -108,7 +96,7 @@ export default function AIAssistant({ email, onClose }) {
 
           <div className="grid grid-cols-2 gap-3">
             <button
-              onClick={() => runAction("summarize")}
+              onClick={() => runAction("summary")}
               disabled={loading}
               className="rounded-2xl border border-[#E2E8DD] bg-white p-4 text-left transition hover:bg-[#EDF3E7] disabled:opacity-50"
             >

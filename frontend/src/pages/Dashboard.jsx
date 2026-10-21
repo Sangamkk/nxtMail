@@ -9,6 +9,9 @@ import Trash from "../components/Trash";
 import Starred from "../components/Starred";
 import Snoozed from "../components/Snoozed";
 import Sent from "../components/Sent";
+import Drafts from "../components/Drafts";
+import Important from "../components/Important";
+import AllMails from "../components/AllMails";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
 const panel = "rounded-2xl border border-[#E7E9DF] bg-white/80";
@@ -197,6 +200,18 @@ export default function Dashboard() {
                     <section className={`${panel} min-h-0 flex-1 overflow-y-auto`}>
                         <Snoozed />
                     </section>
+                ) : active === "Drafts" ? (
+                    <section className={`${panel} min-h-0 flex-1 overflow-y-auto`}>
+                        <Drafts search={search} />
+                    </section>
+                ) : active === "Important" ? (
+                    <section className={`${panel} min-h-0 flex-1 overflow-y-auto`}>
+                        <Important search={search} />
+                    </section>
+                ) : active === "All Mail" ? (
+                    <section className={`${panel} flex min-h-0 flex-1 overflow-hidden`}>
+                        <AllMails search={search} />
+                    </section>
                 ) : (
                     <section className={`${panel} flex min-h-0 flex-1 overflow-hidden`}>
                         <div className={`${selected ? "hidden lg:flex" : "flex"} w-full min-w-0 flex-col lg:w-[360px] lg:shrink-0 lg:border-r lg:border-[#EDF0E8]`}>
@@ -266,7 +281,7 @@ export default function Dashboard() {
                                 email={selected}
                                 onBack={() => setSelected(null)}
                                 onStar={() => selected && toggleStar(selected)}
-                                onArchive={() => console.log("Archive:", selected?.id)}
+                                onArchive={() => selected && emailAction(selected.id || selected.messageId, "/archive", "PATCH")}
                                 onDelete={() => selected && emailAction(selected.id || selected.messageId, "/trash", "POST")}
                                 onSnooze={until => selected && snoozeEmail(selected, until)}
                                 onReply={() => console.log("Reply:", selected?.id)}

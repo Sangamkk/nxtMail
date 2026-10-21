@@ -19,6 +19,7 @@ const menuItems = [
   { name: "Drafts", icon: FileText },
   { name: "Important", icon: Tag },
   { name: "Trash", icon: Trash2 },
+  { name: "All Mail", icon: Mail },
 ];
 
 export default function Sidebar({
